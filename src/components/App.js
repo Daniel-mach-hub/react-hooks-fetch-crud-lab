@@ -1,40 +1,47 @@
 import React, { useState, useEffect } from "react";
+import AdminNavBar from "./AdminNavBar";
 import QuestionForm from "./QuestionForm";
 import QuestionList from "./QuestionList";
 
-
 function App() {
+  const [page, setPage] = useState("List");
   const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:4000/questions")
-      .then((res) => res.json())
-      .then(setQuestions);
+    fetch('http://localhost:4000/questions')
+      .then(response => response.json())
+      .then(data => setQuestions(data))
+      .catch(error => console.error("Error fetching questions:", error));
   }, []);
 
-  function handleAddQuestion(newQuestion) {
+  const handleAddQuestion = (newQuestion) => {
     setQuestions([...questions, newQuestion]);
-  }
+  };
 
-  function handleDeleteQuestion(deletedId) {
-    setQuestions(questions.filter((q) => q.id !== deletedId));
-  }
+  const handleDeleteQuestion = (id) => {
+    const updatedQuestions = questions.filter(question => question.id !== id);
+    setQuestions(updatedQuestions);
+  };
 
-  function handleUpdateQuestion(updatedQ) {
-    setQuestions(
-      questions.map((q) => (q.id === updatedQ.id ? updatedQ : q))
+  const handleUpdateQuestion = (updatedQuestion) => {
+    const updatedQuestions = questions.map(q =>
+      q.id === updatedQuestion.id ? updatedQuestion : q
     );
-  }
+    setQuestions(updatedQuestions);
+  };
 
   return (
     <main>
-      <h1>Quiz Admin</h1>
-      <QuestionForm onAddQuestion={handleAddQuestion} />
-      <QuestionList
-        questions={questions}
-        onDeleteQuestion={handleDeleteQuestion}
-        onUpdateQuestion={handleUpdateQuestion}
-      />
+      <AdminNavBar onChangePage={setPage} />
+      {page === "Form" ? (
+        <QuestionForm onAddQuestion={handleAddQuestion} />
+      ) : (
+        <QuestionList
+          questions={questions}
+          onDeleteQuestion={handleDeleteQuestion}
+          onUpdateQuestion={handleUpdateQuestion}
+        />
+      )}
     </main>
   );
 }
